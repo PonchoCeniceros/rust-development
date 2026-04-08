@@ -37,56 +37,115 @@ bool                            // booleanos
 
 # Estructuras de control
 
-### a. llaves
+### a. Bloques (llaves)
 ```rust
-{
-  resl = expr;
-  resl
+let resultado = {
+    let a = 10;
+    let b = 5;
+    a + b  // última expresión es el valor de retorno
+};
+// resultado == 15
+
+// Uso práctico
+let mensaje = {
+    let nombre = "Rust";
+    let version = 2021;
+    format!("{} v{}", nombre, version)
+};
+```
+
+---
+
+### b. Condicional
+```rust
+// If como expresión (devuelve valor)
+let calificacion = 85;
+let mensaje = if calificacion >= 90 {
+    "Aprobado con honores"
+} else if calificacion >= 70 {
+    "Aprobado"
+} else {
+    "Reprobado"
+};
+
+// If con inicialización (común en Rust)
+let valor = if true { 42 } else { 0 };
+```
+
+---
+
+### c. Match (pattern matching)
+```rust
+enum Direccion {
+    Norte, Sur, Este, Oeste,
+    Diagonal(i32, i32),  // con datos asociados
 }
-```
 
-<br>
+fn mover(dir: Direccion) -> (i32, i32) {
+    match dir {
+        Norte          => (0, 1),
+        Sur            => (0, -1),
+        Este           => (1, 0),
+        Oeste          => (-1, 0),
+        Diagonal(x, y) => (x, y),
+        otra           => {
+            println!("Dirección ignorada: {:?}", otra);
+            (0, 0)
+        }
+    }
+}
 
-### b. condicional
-```rust
-if cond { resl_1 } else { resl_2 }
-```
-
-<br>
-
-### c. _matching_
-```rust
-match expr {
-  expected_resp_1 => resl_1,
-  expected_resp_2 => resl_2
+// Match con guard (condición adicional)
+let num = 7;
+match num {
+    n if n % 2 == 0 => println!("{} es par", n),
+    n               => println!("{} es impar", n),
 }
 ```
 
 ---
 
-# Estructuras de control
-
-### d. ciclos
+### d. Ciclos
 ```rust
-loop {
-  expr;
-  // break
+// loop - uso para operaciones retry o infinite loops
+let mut intentos = 0;
+let resultado = loop {
+    intentos += 1;
+    if intentos == 3 {
+        break "Listo después de 3 intentos";
+    }
+};
+
+// while - cuando necesitas condición
+let mut contador = 0;
+while contador < 5 {
+    println!("Contando: {}", contador);
+    contador += 1;
 }
-```
 
-<br>
-
-```rust
-while cond {
-  expr;
+// for - iterar sobre colecciones/rangos
+for i in 0..=5 {           // 0, 1, 2, 3, 4, 5
+    print!("{} ", i);
 }
-```
 
-<br>
+let colores = ["rojo", "verde", "azul"];
+for color in colores.iter() {
+    println!("Color: {}", color);
+}
 
-```rust
-for i in iter {
-expr;
+// Iterar con enumerate (índice + valor)
+for (idx, valor) in [10, 20, 30].iter().enumerate() {
+    println!("[{}] = {}", idx, valor);
+}
+
+// Loop anidado con label
+' externo: for i in 1..=3 {
+    for j in 1..=3 {
+        if i == 2 && j == 2 {
+            break 'externo;  // sale del loop externo
+        }
+        println!("({}, {})", i, j);
+    }
 }
 ```
 
