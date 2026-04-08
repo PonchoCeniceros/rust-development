@@ -4,34 +4,25 @@ title: Rust Development
 info: |
   ## Resumen del lenguaje de programación Rust
 transition: slide-left
----
-
-# Lorem ipsum
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed magna lorem, maximus eu ante at, tristique posuere lorem. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-
-
-```rust
-pub fn main() -> Result<(), Box<dyn Error>> {
-  println!("Hola mundo!");
-  Ok(())
-}
-```
 
 ---
 
 # Primitivas
 
-```rust
-i8, i16, i32, i64, i128, usize  // enteros con signo
-u8, u16, u32, u64, u128, usize  // enteros sin signo
-f32, f64                        // flotantes
-char                            // caracteres
-str                             // string en el stack
-bool                            // booleanos
-()                              // void
-[T; N]                          // array estático
-(R, S, T, ...)                  // tupla
-```
+| Tipo | Descripción | Ejemplo |
+|------|-------------|---------|
+| `i8, i16, i32, i64, i128, isize` | Enteros con signo (complemento a 2) | `let x: i32 = -42;` |
+| `u8, u16, u32, u64, u128, usize` | Enteros sin signo | `let x: u8 = 255;` |
+| `f32, f64` | Flotantes IEEE 754 | `let x: f64 = 3.14;` |
+| `bool` | Booleano | `let flag: bool = true;` |
+| `char` | Carácter Unicode (32 bits) | `'a'`, `'ñ'`, `'好'` |
+| `str` | String slice (referencia, sin ownership) | `"hola"` |
+| `String` | String con ownership (heap) | `String::from("hola")` |
+| `[T; N]` | Array con longitud fija | `[1, 2, 3]` |
+| `(T, U, ...)` | Tupla con tipos heterogéneos | `(42, "hola", true)` |
+| `()` | Unit (equivalente a void) | `()` |
+
+> **Nota**: `usize`/`isize` dependen de la arquitectura (64 bits en sistemas64-bit).
 
 ---
 
@@ -154,16 +145,121 @@ for (idx, valor) in [10, 20, 30].iter().enumerate() {
 # Mónadas
 
 
-|Contexto      | Salida (Estado)    | Función de Binding | Función de Avance|
-|--------------|--------------------|---------------------|------------------|
-|`Option`        | `Some`, `None`         | `.and_then`           | --              |
-|`Result`        | `Ok`, `Err`            | operador `?`          | --              |
-|`Poll`          | `Ready`, `Pending`     | `.and_then`           | --              |
-|`Iterator`      | `Item`               | `.flat_map`           | `.next()`          |
-|`Future`        | `Output`             | `.await` / `.then`      | `.poll()`          |
-|`Box`           | `Box<T>`                | --   | --              |
+| Tipo         | Estados         | Binding        | Uso principal                |
+|--------------|-----------------|----------------|------------------------------|
+| `Option<T>`  | `Some`, `None`  | `.and_then`    | Valores opcionales           |
+| `Result<T,E>`| `Ok`, `Err`    | `?`            | Manejo de errores            |
+| `Box<T>`     | `Box<T>`        | --             | Recursión, trait objects     |
+| `Iterator`   | `Item`          | `.flat_map`    | Colecciones, "muchos valores" |
+| `Future`     | `Output`        | `.await`       | Valor asíncrono              |
 
-
-`Iterator` gestiona el contexto de "muchos valores" y `Future` gestiona el contexto de "valor en el futuro".
 
 ---
+
+### `Option<T>` - Representa ausencia o presencia de valor
+
+```rust
+// Creación
+let algun_dato: Option<i32> = Some(42);
+let sin_dato: Option<i32> = None;
+
+// Pattern matching
+let valor = match algun_dato {
+    Some(x) => x * 2,
+    None    => 0,
+};
+
+// Métodos comunes
+algun_dato.unwrap_or(100);                  // 42
+sin_dato.unwrap_or(100);                    // 100
+sin_dato.unwrap_or_else(|| 99);             // 99 (lazy)
+
+let doubled = algun_dato.map(|x| x * 2);    // Some(84)
+let filtered = sin_dato.filter(|x| *x > 50); // None
+
+// Chaining con and_then
+fn parse_num(s: &str) -> Option<i32> { s.parse().ok() }
+let r = Some("42").and_then(parse_num);     // Some(42)
+let r = Some("abc").and_then(parse_num);    // None
+```
+
+---
+
+### `Result<T, E>` - Representa éxito o error
+
+```rust
+// Creación
+let ok: Result<i32, &str> = Ok(42);
+let err: Result<i32, &str> = Err("error");
+
+// Operador ? para propagar errores
+fn dividir(a: f64, b: f64) -> Result<f64, String> {
+    if b == 0.0 {
+        Err("División por cero".to_string())
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn procesar() -> Result<f64, String> {
+    let a = dividir(10.0, 2.0)?;  // 5.0
+    let b = dividir(a, 2.0)?;     // 2.5
+    Ok(b)
+}
+
+// Métodos comunes
+ok.map(|x| x * 2);                   // Ok(84)
+ok.map_err(|e| e.to_uppercase());    // Ok(42)
+err.map(|x| x * 2);                  // Err("error")
+
+// Conversión
+let option: Option<i32> = ok.ok();  // Some(42)
+let option: Option<i32> = err.ok(); // None
+```
+
+---
+
+### `Box<T>` - Smart pointer
+
+```rust
+// Creación y desreferencia
+let valor = Box::new(42);           // Box<i32>
+let x = *valor + 10;               // 52
+
+// Uso en recursion (listas enlazadas)
+enum Lista<T> {
+    Cons(T, Box<Lista<T>>),
+    Nil,
+}
+
+let lista: Lista<i32> = Lista::Cons(
+    1,
+    Box::new(Lista::Cons(2, Box::new(Lista::Nil)))
+);
+
+// Trait objects (polimorfismo dinámico)
+trait Dibujable {
+    fn dibujar(&self);
+}
+
+struct Circulo { radio: f64 }
+struct Cuadrado { lado: f64 }
+
+impl Dibujable for Circulo {
+    fn dibujar(&self) { println!("Circulo r={}", self.radio); }
+}
+
+impl Dibujable for Cuadrado {
+    fn dibujar(&self) { println!("Cuadrado l={}", self.lado); }
+}
+
+let formas: Vec<Box<dyn Dibujable>> = vec![
+    Box::new(Circulo { radio: 5.0 }),
+    Box::new(Cuadrado { lado: 3.0 }),
+];
+
+for forma in formas {
+    forma.dibujar();
+}
+```
+
