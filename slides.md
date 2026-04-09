@@ -9,6 +9,8 @@ layout: center
 
 # Primitivas
 
+Tipos básicos integrados al lenguaje, sin overhead de heap allocation y base para construir tipos complejos.
+
 ---
 layout: center
 ---
@@ -64,6 +66,8 @@ layout: center
 ---
 
 # Estructuras de control
+
+Flujo del programa (secuencia, selección, repetición) donde `if/loop/match` son expresiones y todo bloque retorna un valor.
 
 ---
 
@@ -238,12 +242,141 @@ layout: center
 
 # Estructuras de datos
 
+Tipos compuestos para organizar información, mónadas para manejo de ausencia/errores, y collections para grupos de elementos.
+
+---
+layout: center
+---
+
+## `Vec<T>`
+
+| Método | Descripción | Ejemplo |
+|--------|-------------|---------|
+| `new()` | Crea vector vacío | `Vec::<i32>::new()` |
+| `vec![]` | Macro para inicializar | `vec![1, 2, 3]` |
+| `push()` | Agrega elemento | `v.push(4)` |
+| `pop()` | Retira último elemento | `v.pop()` |
+| `get()` | Acceso seguro con índice | `v.get(0)` |
+| `len()` | Cantidad de elementos | `v.len()` |
+
+---
+
+### `Vec<T>` - Ejemplo
+
+<br>
+
+````md magic-move
+
+```rust
+let mut v: Vec<i32> = Vec::new();
+
+v.push(10);
+v.push(20);
+v.push(30);
+
+println!("Vector: {:?}", v);
+```
+
+```rust
+let mut v: Vec<i32> = Vec::new();
+
+v.push(10);
+v.push(20);
+v.push(30);
+
+println!("Vector: {:?}", v);
+println!("Longitud: {}", v.len());
+
+// Acceso seguro con get()
+if let Some(elem) = v.get(1) {
+    println!("Elemento en [1]: {}", elem);
+}
+```
+````
+
+---
+
+### `Vec<T>` - Iteración
+
+<br>
+
+```rust
+let v = vec![10, 20, 30];
+
+for elem in &v {
+    println!("{}", elem);
+}
+```
+
+---
+layout: center
+---
+
+## `HashMap<K,V>`
+
+| Método | Descripción | Ejemplo |
+|--------|-------------|---------|
+| `new()` | Crea HashMap vacío | `HashMap::<String, i32>::new()` |
+| `insert()` | Agrega par clave-valor | `map.insert("edad", 25)` |
+| `get()` | Obtiene valor por clave | `map.get("edad")` |
+| `contains_key()` | Verifica existencia | `map.contains_key("edad")` |
+
+---
+
+### `HashMap` - Ejemplo
+
+<br>
+
+```rust
+use std::collections::HashMap;
+
+let mut edades = HashMap::new();
+
+edades.insert("Ana", 25);
+edades.insert("Luis", 30);
+
+if let Some(edad) = edades.get("Ana") {
+    println!("Edad de Ana: {}", edad);
+}
+```
+
+---
+layout: center
+---
+
+## `HashSet<T>`
+
+| Método | Descripción | Ejemplo |
+|--------|-------------|---------|
+| `new()` | Crea HashSet vacío | `HashSet::<i32>::new()` |
+| `insert()` | Agrega elemento | `set.insert(1)` |
+| `contains()` | Verifica existencia | `set.contains(&1)` |
+
+---
+
+### `HashSet` - Ejemplo
+
+<br>
+
+```rust
+use std::collections::HashSet;
+
+let mut set: HashSet<i32> = HashSet::new();
+
+set.insert(1);
+set.insert(2);
+set.insert(3);
+
+println!("Contiene 2: {}", set.contains(&2));
+```
+
 ---
 layout: center
 ---
 
 ## Mónadas
 
+Tipos que encapsulan ausencia de valor (`Option`) o posibles errores (`Result`), permitiendo encadenar operaciones de forma segura.
 
 | Tipo          | Estados         | Encadenamiento | Uso principal |
 |---------------|----------------|----------------|--------------|
@@ -412,3 +545,82 @@ let y = divide(x, 5.0)?;       // 1.0
 let resl = divide(y, 0.0)?;    // Err → termina aquí
 ```
 ````
+
+---
+layout: center
+---
+
+# Iteradores
+
+Un iterador produce una secuencia de valores compuesta por fuente (`iter()`), adaptadores que la transforman (`map`, `filter`) y consumidores que producen el resultado final (`collect`, `sum`).
+
+---
+layout: center
+---
+
+
+## Adaptadores comunes
+
+| Método | Descripción | Ejemplo |
+|--------|-------------|---------|
+| `map` | Transforma cada elemento | `.map(\|x\| x * 2)` |
+| `filter` | Filtra elementos | `.filter(\|x\| x > 0)` |
+| `take(n)` | Toma los primeros n | `.take(3)` |
+| `skip(n)` | Omite los primeros n | `.skip(2)` |
+| `enumerate` | Incluye índice | `.enumerate()` |
+| `zip` | Combina dos iteradores | `.zip(b.iter())` |
+
+---
+layout: center
+---
+
+## Consumidores comunes
+
+| Método | Descripción | Ejemplo |
+|--------|-------------|---------|
+| `collect` | Convierte a colección | `.collect::<Vec<_>>()` |
+| `sum` | Suma todos los elementos | `.sum()` |
+| `fold` | Acumulador personalizado | `.fold(0, \|acc, x\| acc + x)` |
+| `for_each` | Ejecuta para cada elemento | `.for_each(print!)` |
+
+---
+
+## Iteradores - Pipeline básico
+
+<br>
+
+````md magic-move
+
+```rust
+let nums = vec![1, 2, 3, 4, 5];
+
+let result: Vec<i32> = nums.iter()
+    .map(|x| x * 2)
+    .collect();
+```
+
+```rust
+let nums = vec![1, 2, 3, 4, 5];
+
+let result: Vec<i32> = nums.iter()
+    .map(|x| x * 2)
+    .filter(|x| x > &4)
+    .collect();
+
+println!("{:?}", result); // [6, 8, 10]
+```
+````
+
+---
+
+## Iteradores - enumerate
+
+<br>
+
+```rust
+let frutas = vec!["manzana", "pera", "uva"];
+
+for (i, fruta) in frutas.iter().enumerate() {
+    println!("[{}] {}", i, fruta);
+}
+```
