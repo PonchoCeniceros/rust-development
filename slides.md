@@ -4,7 +4,6 @@ title: Rust Development
 info: |
   ## Resumen del lenguaje de programación Rust
 transition: slide-left
-
 ---
 
 # Primitivas
@@ -62,24 +61,19 @@ transition: slide-left
 <br>
 
 ```rust
-let resultado = {
+
+fn main() {
+
+  let resl = {
     let a = 10;
     let b = 5;
     a + b  // última expresión es el valor de retorno
-};
-// resultado == 15
+  };
+
+  println!("resultado == {}", resl);
+}
 ```
 
-<br>
-
-```rust
-// Uso práctico
-let mensaje = {
-    let nombre = "Rust";
-    let version = 2021;
-    format!("{} v{}", nombre, version)
-};
-```
 ---
 
 ## Condicionales
@@ -87,8 +81,8 @@ let mensaje = {
 <br>
 
 ```rust
-// If como expresión (devuelve valor)
 let calificacion = 85;
+
 let mensaje = if calificacion >= 90 {
     "Aprobado con honores"
 } else if calificacion >= 70 {
@@ -97,11 +91,9 @@ let mensaje = if calificacion >= 90 {
     "Reprobado"
 };
 ```
-
 <br>
 
 ```rust
-// If con inicialización
 let valor = if true { 42 } else { 0 };
 ```
 ---
@@ -121,42 +113,49 @@ match clima {
 }
 ```
 
-<br>
-
-```rust
-let regalo = Some("Bicicleta");
-
-match regalo {
-    Some(cosa) => println!("¡Recibiste una {}!", cosa),
-    None => (), // No hacer nada
-}
-```
-
 ---
 
 ## Ciclos
 
 <br>
 
+### `loop`
+````md magic-move
+
 ```rust
-// loop - uso para operaciones retry o infinite loops
-let mut intentos = 0;
-let resultado = loop {
-    intentos += 1;
-    if intentos == 3 {
-        break "Listo después de 3 intentos";
-    }
+let mut tries = 0;
+
+let resl = loop {
+    tries += 1;
 };
 ```
 
+```rust
+let mut tries = 0;
+
+let resl = loop {
+    tries += 1;
+    if tries == 3 {
+        break "Listo después de 3 intentos";
+    }
+};
+
+```
+````
+
+---
+
+## Ciclos
+
 <br>
 
+### `while`
 ```rust
-// while - cuando necesitas condición
-let mut contador = 0;
-while contador < 5 {
-    println!("Contando: {}", contador);
-    contador += 1;
+let mut count = 0;
+
+while count < 5 {
+    println!("Contando: {}", count);
+    count += 1;
 }
 ```
 
@@ -166,87 +165,221 @@ while contador < 5 {
 
 <br>
 
+### `for`
+````md magic-move
+
 ```rust
-// for - iterar sobre rangos
-for i in 0..=5 {           // 0, 1, 2, 3, 4, 5
+//iterar sobre rangos
+for i in 0..=5 { // 0, 1, 2, 3, 4, 5
+    print!("{} ", i);
+}
+```
+
+```rust
+//iterar sobre rangos
+for i in 0..=5 { // 0, 1, 2, 3, 4, 5
     print!("{} ", i);
 }
 
 // iterar sobre colecciones
-let colores = ["rojo", "verde", "azul"];
-for color in colores.iter() {
+let colors = ["rojo", "verde", "azul"];
+
+for color in colors.iter() {
+    println!("Color: {}", color);
+}
+```
+
+```rust
+//iterar sobre rangos
+for i in 0..=5 { // 0, 1, 2, 3, 4, 5
+    print!("{} ", i);
+}
+
+// iterar sobre colecciones
+let colors = ["rojo", "verde", "azul"];
+
+for color in colors.iter() {
     println!("Color: {}", color);
 }
 
 // Iterar con enumerate (índice + valor)
-for (idx, valor) in [10, 20, 30].iter().enumerate() {
-    println!("[{}] = {}", idx, valor);
+let arr = [10, 20, 30];
+
+for (idx, val) in arr.iter().enumerate() {
+    println!("[{}] = {}", idx, val);
 }
 ```
+````
 
 ---
 
-# Mónadas
+## Mónadas
 
 
-| Tipo         | Estados         | Binding        | Uso principal                |
-|--------------|-----------------|----------------|------------------------------|
-| `Option<T>`  | `Some`, `None`  | `.and_then`    | Representa ausencia o presencia de valor           |
-| `Result<T,E>`| `Ok`, `Err`    | `?`            | Representa éxito o error / Manejo de errores            |
-| `Box<T>`     | `Box<T>`        | --             |  _smart pointer_    |
-
-
-<br>
-
-> `Box`no entraría como tal en la categoría de mónada pero es un objeto que sirve de almacenamiento, tal como lo hacen`Option`y`Result`
+| Tipo          | Estados         | Encadenamiento | Uso principal |
+|---------------|----------------|----------------|--------------|
+| `Option<T>`   | `Some`, `None` | `.and_then` / `?` | Valor opcional |
+| `Result<T,E>` | `Ok`, `Err`    | `.and_then` / `?` | Manejo de errores |
 
 ---
 
 ## `Option<T>`
 
-```rust
-use std::error::Error;
+<br>
 
+````md magic-move
+```rust
+fn divide(a: f64, b: f64) -> Option<f64> {
+  if b == 0.0 { None } else { Some(a / b) }
+}
+```
+
+```rust
 fn divide(a: f64, b: f64) -> Option<f64> {
   if b == 0.0 { None } else { Some(a / b) }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let a = dividir(10.0, 2.0);              // Some(5.0)
-    let b = a.and_then(|x| divide(x, 0.0));  // None
-
-    match b {
-        Some(x) => Ok(()),
-        None    => Err("Error".into()),      // Box<Error: "error">
-                                             // into es un "smart casting"
-    }
+fn main() {
+    let a = divide(10.0, 2.0); // Some(5.0)
 }
 ```
+
+```rust
+fn divide(a: f64, b: f64) -> Option<f64> {
+  if b == 0.0 { None } else { Some(a / b) }
+}
+
+fn main() {
+  let a = divide(10.0, 2.0);              // Some(5.0)
+  // and_then encadena operaciones que regresan Option
+  let b = a.and_then(|x| divide(x, 0.0)); // None
+}
+```
+
+```rust
+fn divide(a: f64, b: f64) -> Option<f64> {
+  if b == 0.0 { None } else { Some(a / b) }
+}
+
+fn main() {
+  let a = divide(10.0, 2.0);
+  let b = a.and_then(|x| divide(x, 0.0));
+
+  // manejamos la respuesta obtenida
+  match b {
+    Some(x) => println!("resultado: {}", x),
+    None => println!("no hay valor"),
+  }
+}
+```
+````
 
 ---
 
 ## `Result<T, E>`
 
-```rust
-use std::error::Error;
+<br>
 
+````md magic-move
+
+```rust
+fn divide(a: f64, b: f64) -> Result<f64, String> {
+  if b == 0.0 { Err("error".to_string()) } else { Ok(a / b) }
+}
+```
+
+```rust {*|6|7|*}
 fn divide(a: f64, b: f64) -> Result<f64, String> {
   if b == 0.0 { Err("error".to_string()) } else { Ok(a / b) }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let  a = divide(10.0, 2.0);  // Ok(5.0)
-    let  x = a?;                 // 5.0
-    let  b = divide(x, 0.0);     // Err("error")
-    let _y = b?;                 // Box<Error: "error">
-
-    // podriamos cambiar el comportamiento del error
-    // let _y = b                // Box<Error: "ERROR">
-    //         .map_err(
-    //             |e| e.to_uppercase()
-    //         );
-
-    Ok(())
+// main también puede regresar Result
+fn main() -> Result<(), String> {
+  Ok(())
 }
 ```
 
+```rust
+fn divide(a: f64, b: f64) -> Result<f64, String> {
+  if b == 0.0 { Err("error".to_string()) } else { Ok(a / b) }
+}
+
+fn main() -> Result<(), String> {
+  let a = divide(10.0, 2.0);              // Ok(5.0)
+  let b = a.and_then(|x| divide(x, 0.0)); // Err("error")
+
+  Ok(())
+}
+```
+
+```rust
+fn divide(a: f64, b: f64) -> Result<f64, String> {
+  if b == 0.0 { Err("error".to_string()) } else { Ok(a / b) }
+}
+
+fn main() -> Result<(), String> {
+  let a = divide(10.0, 2.0);              // Ok(5.0)
+  let b = a.and_then(|x| divide(x, 0.0)); // Err("error")
+
+  // manejamos la respuesta obtenida
+  match b {
+    Ok(x) => println!("resultado: {}", x),
+    Err(e) => println!("error: {}", e),
+  }
+
+  Ok(())
+}
+```
+````
+
+---
+
+## Operador `?`
+
+<br>
+
+````md magic-move
+
+```rust
+let resl = divide(10.0, 2.0)
+           .and_then(|x| divide(x, 5.0))
+           .and_then(|y| divide(y, 0.0));
+
+```
+
+```rust
+// internamente el valor de la operacion se maneja a asi
+let resl = divide(10.0, 2.0)        // Ok(5.0)
+           .and_then(|x|            // x = 5.0
+                     divide(x, 5.0) // Ok(1.0)
+           )
+           .and_then(|y|            // y = 1.0
+                     divide(y, 0.0) // Err("error")
+           )
+```
+
+```rust
+// si queremos ponerlo en terminos de match pattern
+let x = match divide(10.0, 2.0) {
+    Ok(v) => v,
+    Err(e) => return Err(e),
+};
+
+let y = match divide(x, 5.0) {
+    Ok(v) => v,
+    Err(e) => return Err(e),
+};
+
+let resl = match divide(y, 0.0) {
+    Ok(v) => v,
+    Err(e) => return Err(e),
+};
+
+```
+
+```rust
+let x = divide(10.0, 2.0)?;    // 5.0
+let y = divide(x, 5.0)?;       // 1.0
+let resl = divide(y, 0.0)?;    // Err → termina aquí
+```
+````
