@@ -7,6 +7,29 @@ transition: slide-left
 layout: center
 ---
 
+# Rust Development
+básico
+
+---
+layout: center
+---
+
+## Índice
+
+| # | Tema |
+|---|------|
+| 1 | Primitivas |
+| 2 | Estructuras de control |
+| 3 | Estructuras de datos |
+| 4 | Iteradores |
+| 5 | Funciones |
+| 6 | Ownership |
+| 7 | Ejemplo integrado |
+
+---
+layout: center
+---
+
 # Primitivas
 
 Tipos básicos integrados al lenguaje, sin overhead de heap allocation y base para construir tipos complejos.
@@ -624,3 +647,357 @@ for (i, fruta) in frutas.iter().enumerate() {
     println!("[{}] {}", i, fruta);
 }
 ```
+
+---
+layout: center
+---
+
+# Funciones
+
+Fragmentos de código reutilizables que encapsulan lógica, reciben parámetros y pueden retornar valores.
+
+---
+
+## Sintaxis básica
+
+Declaradas con `fn`, reciben tipos anotados y retornan valores explícitos.
+
+<br>
+
+```rust
+fn greet(name: &str) -> String {
+    format!("Hola, {}!", name)
+}
+
+fn main() {
+    let mensaje = greet("Mundo");
+    println!("{}", mensaje);
+}
+```
+
+---
+
+## Múltiples retornos
+
+Las funciones pueden retornar múltiples valores usando tuplas, útil para operaciones como división y residuo.
+
+<br>
+
+```rust
+fn div_mod(a: i32, b: i32) -> (i32, i32) {
+    (a / b, a % b)
+}
+
+fn main() {
+    let (cociente, residuo) = div_mod(10, 3);
+    println!("10 = 3 * {} + {}", cociente, residuo);
+}
+```
+
+---
+
+## Closures
+
+Funciones anónimas definidas inline con sintaxis `|params| expression`, capturan variables de su entorno.
+
+<br>
+
+```rust
+// Sintaxis: |params| expression
+let doble = |x: i32| x * 2;
+let sumar = |a, b| a + b;
+
+println!("{}", doble(5));  // 10
+println!("{}", sumar(2, 3)); // 5
+```
+
+---
+
+## Closures en contexto
+
+Comúnmente usados con iteradores: `map` transforma y `filter` selecciona elementos según una condición.
+
+<br>
+
+````md magic-move
+
+```rust
+let nums = vec![1, 2, 3, 4, 5];
+
+let resultado: Vec<i32> = nums.iter()
+    .map(|x| x * 2)
+    .collect();
+```
+
+```rust
+let nums = vec![1, 2, 3, 4, 5];
+
+// filter usa closure con condición
+let pares: Vec<&i32> = nums.iter()
+    .filter(|x| *x % 2 == 0)
+    .collect();
+```
+````
+
+---
+layout: center
+---
+
+# Ownership
+
+Sistema único de Rust donde cada valor tiene un único dueño; cuando el dueño sale del ámbito, el valor se libera.
+
+---
+
+## Move semantics
+
+Asignar un valor a otra variable transfiere la propiedad; la variable original deja de ser válida.
+
+<br>
+
+````md magic-move
+
+```rust
+let v1 = vec![1, 2, 3]; // v1 es el dueño
+let v2 = v1;             // ownership se transfiere a v2
+
+// println!("{:?}", v1); // error: v1 ya no es válido
+println!("{:?}", v2);    // OK
+```
+
+```rust
+let v1 = vec![1, 2, 3];
+let v2 = v1;             // v1 se "mueve" a v2
+
+println!("{:?}", v2);    // [1, 2, 3]
+```
+````
+
+---
+
+## Copy trait
+
+Tipos simples (i32, bool, char) se copian implícitamente; tipos complejos (Vec, String) se mueven.
+
+<br>
+
+````md magic-move
+
+```rust
+let x = 5;   // i32 implementa Copy
+let y = x;   // se copia, no se mueve
+
+println!("x = {}, y = {}", x, y); // ambos válidos
+```
+
+```rust
+let v = vec![1, 2, 3];  // Vec NO implementa Copy
+let w = v;               // se mueve
+
+// println!("{:?}", v); // error: v ya no es válido
+println!("{:?}", w);
+```
+````
+
+---
+
+## Iteradores y ownership
+
+| Método | Retorna | Efecto en ownership |
+|--------|---------|---------------------|
+| `iter()` | `&T` | Presta referencia inmutable |
+| `iter_mut()` | `&mut T` | Presta referencia mutable |
+| `into_iter()` | `T` | Consume y mueve el valor |
+
+<br>
+
+```rust
+let nums = vec![1, 2, 3];
+
+for n in &nums     { } // nums sigue válido
+for n in &mut nums { } // nums sigue válido
+for n in nums       { } // nums ya no existe (movido)
+```
+
+---
+
+## Borrowing
+
+Las referencias (`&`) permiten usar un valor sin transferir ownership; la variable original sigue válida.
+
+<br>
+
+```rust
+fn calcular_largo(s: &String) -> usize {
+    s.len()
+}
+
+fn main() {
+    let s = String::from("hola");
+    let largo = calcular_largo(&s); // prestamos s
+
+    println!("'{}' tiene {} caracteres", s, largo);
+}
+```
+
+---
+
+## Borrowing mutable
+
+Las referencias mutables (`&mut`) permiten modificar un valor prestado sin transferir ownership.
+
+<br>
+
+```rust
+fn agregar_exclamacion(s: &mut String) {
+    s.push('!');
+}
+
+fn main() {
+    let mut texto = String::from("hola");
+    agregar_exclamacion(&mut texto);
+    println!("{}", texto); // "hola!"
+}
+```
+
+---
+
+## Reglas de borrowing
+
+Puedes tener muchas referencias inmutables O una sola mutable, nunca ambas simultáneamente.
+
+<br>
+
+| Regla | Ejemplo |
+|-------|---------|
+| Puedes tener muchas referencias inmutables | `&x`, `&x`, `&x` |
+| O una sola referencia mutable | `&mut x` |
+| Nunca ambos al mismo tiempo | `&x` + `&mut x` = error |
+
+---
+
+## Ownership en funciones
+
+Pasar un valor a una función lo mueve; para usarlo después, se pasa una referencia o se retorna.
+
+<br>
+
+```rust
+fn procesar(v: Vec<i32>) -> Vec<i32> {
+    v.into_iter().map(|x| x * 2).collect()
+}
+
+fn main() {
+    let nums = vec![1, 2, 3];
+    let resultado = procesar(nums); // nums se mueve a la función
+    // println!("{:?}", nums); // error
+    println!("{:?}", resultado); // [2, 4, 6]
+}
+```
+
+---
+layout: center
+---
+
+# Ejemplo integrado
+
+Procesar usuarios: filtrar mayores de edad, transformar nombres y registrar resultados aplicando ownership, iteradores, monadas y funciones.
+
+---
+
+## Struct Usuario
+
+<br>
+
+```rust
+#[derive(Debug)]
+struct Usuario {
+  nombre: String,
+  edad: u8,
+}
+```
+
+---
+
+## Función de cración de usuarios
+
+<br>
+
+```rust
+fn crear_usuario(nombre: &str, edad: u8) -> Result<Usuario, String> {
+    if nombre.is_empty() {
+        Err("El nombre no puede estar vacío".to_string())
+    } else if edad > 120 {
+        Err("Edad inválida".to_string())
+    } else {
+        Ok(Usuario {
+          nombre: nombre.to_string(),
+          edad
+        })
+    }
+}
+```
+
+---
+
+## Procesamiento completo
+
+<br>
+
+````md magic-move
+
+```rust
+fn main() -> Result<(), String> {
+    let nombres = vec!["Ana", "Luis", "María"];
+    let edades = vec![25, 17, 45];
+
+    // Iteradores + Funciones + Monadas
+    let usuarios: Vec<Usuario> = nombres
+        .iter()
+        .zip(edades.iter())
+        .map(|(n, e)| crear_usuario(n, *e))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    println!("{:?}", usuarios);
+    Ok(())
+}
+```
+
+```rust
+fn main() -> Result<(), String> {
+    let nombres = vec!["Ana", "Luis", "María"];
+    let edades = vec![25, 17, 45];
+
+    // Iteradores + Funciones + Monadas
+    let usuarios: Vec<Usuario> = nombres
+        .iter()
+        .zip(edades.iter())
+        .map(|(n, e)| crear_usuario(n, *e))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    // Iteradores + Closures + Ownership: filtrar y transformar
+    let resultado: Vec<String> = usuarios
+        .into_iter()                       // Ownership: consume usuarios
+        .filter(|u| u.edad >= 18)          // Closure: filtrar
+        .map(|u| u.nombre.to_uppercase())  // Closure: transformar
+        .collect();
+
+    println!("Mayores de edad: {:?}", resultado);
+    Ok(())
+}
+```
+````
+
+---
+
+## Conceptos aplicados
+
+<br>
+
+| Concepto | Aplicación |
+|----------|------------|
+| **Funciones** | `crear_usuario()` combina datos y valida |
+| **Monadas** | `Result<T, E>` con `?` encadena errores |
+| **Iteradores** | `iter()`, `zip()`, `map()`, `filter()`, `collect()` |
+| **Closures** | `\|u\| u.edad >= 18`, `\|u\| u.nombre...` |
+| **Ownership** | `into_iter()` consume `usuarios` |
