@@ -4,10 +4,13 @@ title: Rust Development
 info: |
   ## Resumen del lenguaje de programación Rust
 transition: slide-left
+layout: center
 ---
 
 # Primitivas
 
+---
+layout: center
 ---
 
 ## Numéricos
@@ -22,6 +25,8 @@ transition: slide-left
 > **Nota**: `usize`/`isize` dependen de la arquitectura (64 bits por lo general).
 
 ---
+layout: center
+---
 
 ## Caracteres
 
@@ -31,6 +36,8 @@ transition: slide-left
 | `str` | String slice (referencia, sin ownership) | `"hola"` |
 | `String` | String con ownership (heap) | `String::from("hola")` |
 
+---
+layout: center
 ---
 
 ## Especiales
@@ -42,6 +49,8 @@ transition: slide-left
 
 
 ---
+layout: center
+---
 
 ## Colecciones
 
@@ -50,6 +59,8 @@ transition: slide-left
 | `[T; N]` | Array con longitud fija | `[1, 2, 3]` |
 | `(T, U, ...)` | Tupla con tipos heterogéneos | `(42, "hola", true)` |
 
+---
+layout: center
 ---
 
 # Estructuras de control
@@ -96,6 +107,7 @@ let mensaje = if calificacion >= 90 {
 ```rust
 let valor = if true { 42 } else { 0 };
 ```
+
 ---
 
 ## _pattern matching_
@@ -120,6 +132,9 @@ match clima {
 <br>
 
 ### `loop`
+
+<br>
+
 ````md magic-move
 
 ```rust
@@ -150,6 +165,9 @@ let resl = loop {
 <br>
 
 ### `while`
+
+<br>
+
 ```rust
 let mut count = 0;
 
@@ -166,6 +184,9 @@ while count < 5 {
 <br>
 
 ### `for`
+
+<br>
+
 ````md magic-move
 
 ```rust
@@ -212,6 +233,14 @@ for (idx, val) in arr.iter().enumerate() {
 ````
 
 ---
+layout: center
+---
+
+# Estructuras de datos
+
+---
+layout: center
+---
 
 ## Mónadas
 
@@ -223,7 +252,7 @@ for (idx, val) in arr.iter().enumerate() {
 
 ---
 
-## `Option<T>`
+### `Option<T>`
 
 <br>
 
@@ -276,7 +305,7 @@ fn main() {
 
 ---
 
-## `Result<T, E>`
+### `Result<T, E>`
 
 <br>
 
@@ -334,7 +363,7 @@ fn main() -> Result<(), String> {
 
 ---
 
-## Operador `?`
+### Operador `?`
 
 <br>
 
@@ -348,7 +377,7 @@ let resl = divide(10.0, 2.0)
 ```
 
 ```rust
-// internamente el valor de la operacion se maneja a asi
+// internamente el valor de la operacion se maneja asi
 let resl = divide(10.0, 2.0)        // Ok(5.0)
            .and_then(|x|            // x = 5.0
                      divide(x, 5.0) // Ok(1.0)
